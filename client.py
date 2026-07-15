@@ -4,9 +4,7 @@ import tkinter as tk
 from tkinter.scrolledtext import ScrolledText
 import websockets
 
-SERVER = "wss://messenger2-9p6y.onrender.com
-
-/chat"
+SERVER = "wss://https://messenger2-40wh.onrender.com/chat"
 
 root = tk.Tk()
 root.title("Ben Chat")
