@@ -6,39 +6,53 @@ import websockets
 
 SERVER = "wss://https://messenger2-40wh.onrender.com/chat"
 
-root = tk.Tk()
-root.title("Ben Chat")
+class ChatClient:
 
-chat = ScrolledText(root)
-chat.pack(fill="both", expand=True)
+    def __init__(self):
 
-entry = tk.Entry(root)
-entry.pack(fill="x")
+        self.root = tk.Tk()
+        self.root.title("Ben Chat")
+
+        self.chat = ScrolledText(self.root)
+        self.chat.pack(fill="both", expand=True)
+
+        self.entry = tk.Entry(self.root)
+        self.entry.pack(fill="x")
+
+        self.button = tk.Button(self.root, text="Envoyer", command=self.send)
+        self.button.pack(fill="x")
+
+        self.ws = None
+
+        threading.Thread(target=self.start_loop, daemon=True).start()
+
+        self.root.mainloop()
+
+    def start_loop(self):
+        asyncio.run(self.connect())
+
+    async def connect(self):
+        self.ws = await websockets.connect(SERVER)
+
+        while True:
+            msg = await self.ws.recv()
+
+            self.chat.insert(tk.END, msg + "\n")
+            self.chat.see(tk.END)
+
+    def send(self):
+
+        text = self.entry.get()
+
+        if text == "":
+            return
+
+        asyncio.run_coroutine_threadsafe(
+            self.ws.send(text),
+            asyncio.get_event_loop()
+        )
+
+        self.entry.delete(0, tk.END)
 
 
-async def receive():
-    async with websockets.connect(SERVER) as ws:
-
-        async def listen():
-            while True:
-                msg = await ws.recv()
-                chat.insert(tk.END, msg + "\n")
-                chat.see(tk.END)
-
-        async def send_loop():
-            while True:
-                await asyncio.sleep(0.1)
-
-        threading.Thread(target=lambda: asyncio.run(listen())).start()
-
-        def send():
-            text = entry.get()
-            asyncio.run(ws.send(text))
-            entry.delete(0, tk.END)
-
-        tk.Button(root, text="Envoyer", command=send).pack()
-
-        await send_loop()
-
-
-asyncio.run(receive())
+ChatClient()
