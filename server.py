@@ -2,7 +2,12 @@ from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 import uvicorn
 
 app = FastAPI()
-
+@app.get("/")
+def home():
+    return {
+        "status": "BenChat est en ligne",
+        "websocket": "/chat"
+    }
 clients = []
 
 @app.websocket("/chat")
